@@ -23,21 +23,44 @@ function setup() {
 }
 
 function checkWinner() {
-  let winner = null;
-  // horizontal
+  let winner = {
+    id: null,
+    type: null,
+    index: null,
+    array: [],
+  };
 
+  function equal3(a, b, c) {
+    return a == b && b == c && c == a && a != "";
+  }
+  // horizontal
   for (let i = 0; i < 3; i++) {
-    if (board[i][0] == "X" && board[i][1] == "X" && board[i][2] == "X") {
-      winner = board[i][0];
-    } else if (board[i][0] == "O" && board[i][1] == "O" && board[i][2] == "O") {
-      winner = board[i][0];
+    if (equal3(board[i][0], board[i][1], board[i][2])) {
+      winner = { id: board[i][0], type: "row", index: i + 1 };
     }
   }
-  if (available.length == 0 && winner == null) {
-    return "Tie";
+  // Vertical
+  for (let i = 0; i < 3; i++) {
+    if (equal3(board[0][i], board[1][i], board[2][i])) {
+      winner = { id: board[0][i], type: "column", index: i + 1 };
+    }
+  }
+  // Diagonal
+
+  if (equal3(board[0][0], board[1][1], board[2][2])) {
+    winner = { id: board[0][0], type: "diag", index: 0 };
+  } else if (equal3(board[0][2], board[1][1], board[2][0])) {
+    winner = { id: board[0][2], type: "diag", index: 1 };
+  }
+
+  if (available.length == 0 && winner.id == null) {
+    winner = { id: "Tie" };
+    return winner;
   } else {
     return winner;
   }
+
+  //   console.log(winner);
 }
 
 function nextTurn() {
@@ -76,15 +99,43 @@ function draw() {
         line(x - xr, y - xr, x + xr, y + xr);
         line(x + xr, y - xr, x - xr, y + xr);
       }
-
-      //   text(spot, x, y);
     }
   }
 
   let result = checkWinner();
-  if (result != null) {
+  if (result.id != null) {
     noLoop();
-    createP(result).style("color", "#000").style("font-size", "32pt");
+    createP(result.id + " won" + " with a " + result.type)
+      .style("color", "#000")
+      .style("font-size", "32pt");
+
+    if (result.type == "diag") {
+      strokeWeight(10);
+      stroke("red");
+      if (result.index == 0) {
+        line(w / 3, h / 3, w * 3 - w / 3, h * 3 - h / 3);
+      } else {
+        line(h / 3, h * 3 - h / 3, w * 3 - w / 3, h / 3);
+      }
+    } else if (result.type == "column") {
+      strokeWeight(10);
+      stroke("red");
+      line(
+        result.index * w - 0.5 * w,
+        h / 3,
+        result.index * w - 0.5 * w,
+        (h / 3) * 8
+      );
+    } else if (result.type == "row") {
+      strokeWeight(10);
+      stroke("red");
+      line(
+        w / 3,
+        h * result.index - 0.5 * h,
+        w * 3 - w / 3,
+        h * result.index - 0.5 * h
+      );
+    }
   } else {
     nextTurn();
   }
